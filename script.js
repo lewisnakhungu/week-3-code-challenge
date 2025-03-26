@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const API_URL = "http://localhost:3000/films";
+    const API_URL = "https://api.jsonbin.io/v3/b/67e3cde28561e97a50f32d33/latest"; 
+    const API_KEY = "YOUR_JSONBIN_API_KEY"; // Replace with your actual API key
 
     const filmsList = document.getElementById("films");
     const moviePoster = document.getElementById("movie-poster");
@@ -13,22 +14,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let currentMovie = null;
 
-    //  Fetch and display movies
     function loadMovies() {
-        fetch(API_URL)
-            .then(response => response.json())
-            .then(movies => {
+        fetch(API_URL, {
+            method: "GET",
+            headers: { 
+                "X-Master-Key": API_KEY, 
+                "Content-Type": "application/json"
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Fetched Data:", data); 
+
+            if (data && data.record && data.record.films) {
+                const movies = data.record.films;  
                 displayMovieList(movies);
-                if (movies.length > 0) {
-                    displayMovieDetails(movies[0]); 
-                }
-            })
-            .catch(error => console.log("Error fetching movies:", error));
+                displayMovieDetails(movies[0]); 
+            } else {
+                console.error("Unexpected data format:", data);
+            }
+        })
+        .catch(error => console.error("Error fetching movies:", error));
     }
-    
 
-
-    // Display movie list
     function displayMovieList(movies) {
         filmsList.innerHTML = "";
         movies.forEach(function (movie) {
@@ -44,9 +52,7 @@ document.addEventListener("DOMContentLoaded", function () {
             filmsList.appendChild(listItem);
         });
     }
-    
 
-    //  Display movie details
     function displayMovieDetails(movie) {
         currentMovie = movie;
         moviePoster.src = movie.poster;
@@ -57,14 +63,12 @@ document.addEventListener("DOMContentLoaded", function () {
         updateTickets(movie.capacity - movie.tickets_sold);
     }
 
-    // Update available tickets
     function updateTickets(ticketsLeft) {
         availableTickets.textContent = ticketsLeft;
         buyTicketButton.disabled = ticketsLeft <= 0;
         buyTicketButton.textContent = ticketsLeft > 0 ? "Buy Ticket" : "Sold Out";
     }
 
-    // Buy a ticket
     buyTicketButton.addEventListener("click", function () {
         if (!currentMovie) return;
 
@@ -77,7 +81,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             fetch(API_URL + "/" + currentMovie.id, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "X-Master-Key": API_KEY },
                 body: JSON.stringify({ tickets_sold: currentMovie.tickets_sold })
             })
             .then(response => response.json())
@@ -86,21 +90,22 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    //  Remove a movie
     deleteMovieButton.addEventListener("click", function () {
         if (!currentMovie) return;
 
-        fetch(API_URL + "/" + currentMovie.id, { method: "DELETE" })
-            .then(function () {
-                document.querySelector(`[data-id='${currentMovie.id}']`).remove();
-                clearMovieDetails();
-                currentMovie = null;
-                console.log("Movie deleted successfully");
-            })
-            .catch(error => console.log("Error deleting movie:", error));
+        fetch(API_URL + "/" + currentMovie.id, { 
+            method: "DELETE",
+            headers: { "X-Master-Key": API_KEY }
+        })
+        .then(() => {
+            document.querySelector(`[data-id='${currentMovie.id}']`).remove();
+            clearMovieDetails();
+            currentMovie = null;
+            console.log("Movie deleted successfully");
+        })
+        .catch(error => console.log("Error deleting movie:", error));
     });
 
-    // Clear deleting a movie
     function clearMovieDetails() {
         moviePoster.src = "";
         movieTitle.textContent = "";
@@ -110,24 +115,5 @@ document.addEventListener("DOMContentLoaded", function () {
         availableTickets.textContent = "";
     }
 
-    //Bonus
-    function addMovie(movie) {
-        fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(movie)
-        })
-        .then(response => response.json())
-        .then(function (newMovie) {
-            displayMovieList([...document.querySelectorAll(".film")].map(film => ({
-                id: film.dataset.id,
-                title: film.textContent
-            })).concat(newMovie));
-            console.log("Movie added:", newMovie);
-        })
-        .catch(error => console.log("Error adding movie:", error));
-    }
-
-    // Load movies when page loads
     loadMovies();
 });
