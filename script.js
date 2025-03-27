@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
     const API_URL = "https://api.jsonbin.io/v3/b/67e3cde28561e97a50f32d33/latest"; 
-    const API_KEY = "Y$2a$10$ZfCf8N58PAXmNVuDZfvXDOAk3psSJ6D5nRv0Br3MXuoxM0pslEMU."; // Replace with your actual API key
+   // Replace with your actual API key
 
     const filmsList = document.getElementById("films");
     const moviePoster = document.getElementById("movie-poster");
