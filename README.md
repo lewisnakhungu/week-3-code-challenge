@@ -11,11 +11,16 @@ A simple web application that allows users to view movies, buy tickets, and mana
 ✔ Responsive design using CSS Flexbox.
 
 # Setup Instructions
-1️Clone this repository
-Install JSON Server
-npm install -g json-server
- Start the JSON Server
-json-server --watch db.json --port 3000 --cors
+1️Clone this repository.
+
+Install JSON Server.
+
+npm install -g json-server.
+
+ Start the JSON Server.
+ 
+json-server --watch db.json --port 3000 --cors.
+
 4 Open index.html with Live Server (Recommended for CORS issues).
 
 # Running the Project
